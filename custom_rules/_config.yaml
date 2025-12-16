@@ -1,0 +1,23 @@
+# Custom rules configuration file
+# This config is used when CUSTOM_RULES_DIR environment variable is set to 'custom_rules'
+
+rule_dirs:
+  - rules
+
+# Reference the main repository's etc directory for shared configuration
+# These paths are relative to the detection_rules/etc directory
+files:
+  deprecated_rules: ../../detection_rules/etc/deprecated_rules.json
+  packages: ../../detection_rules/etc/packages.yaml
+  stack_schema_map: ../../detection_rules/etc/stack-schema-map.yaml
+  version_lock: ../../detection_rules/etc/version.lock.json
+
+normalize_kql_keywords: False
+
+# Directories for exceptions and action connectors
+# Uncomment and configure if you want to manage these separately
+# directories:
+#   exception_dir: exceptions
+#   action_connector_dir: action_connectors
+
+
