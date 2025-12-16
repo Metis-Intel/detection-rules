@@ -1,0 +1,139 @@
+name: Sync Rules from Elastic
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  CUSTOM_RULES_DIR: custom_rules
+
+jobs:
+  sync-from-elastic:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip cache purge
+        pip install .[dev]
+        pip install lib/kibana
+        pip install lib/kql
+
+    - name: Create export directory
+      run: |
+        mkdir -p elastic-export
+        mkdir -p "$CUSTOM_RULES_DIR/rules"
+        mkdir -p "$CUSTOM_RULES_DIR/exceptions"
+        mkdir -p "$CUSTOM_RULES_DIR/action_connectors"
+
+    - name: Export rules from Elastic
+      env:
+        CUSTOM_RULES_DIR: ${{ env.CUSTOM_RULES_DIR }}
+        DR_KIBANA_URL: ${{ secrets.ELASTIC_KIBANA_URL }}
+        DR_API_KEY: ${{ secrets.ELASTIC_API_KEY }}
+        DR_SPACE: ${{ secrets.ELASTIC_SPACE || 'default' }}
+      run: |
+        echo "Exporting custom rules from Elastic..."
+        python -m detection_rules kibana \
+          --kibana-url "$DR_KIBANA_URL" \
+          --api-key "$DR_API_KEY" \
+          --space "$DR_SPACE" \
+          export-rules \
+          -d elastic-export \
+          -cro \
+          -e \
+          -ac \
+          -ed "$CUSTOM_RULES_DIR/exceptions" \
+          -acd "$CUSTOM_RULES_DIR/action_connectors" \
+          -s \
+          -lu \
+          -lc || echo "Export completed with some errors (check logs)"
+
+    - name: Import rules to repository
+      env:
+        CUSTOM_RULES_DIR: ${{ env.CUSTOM_RULES_DIR }}
+      run: |
+        if [ -d "elastic-export" ] && [ -n "$(find elastic-export -name '*.toml' -type f 2>/dev/null)" ]; then
+          echo "Importing rules from Elastic export to repository..."
+          python -m detection_rules import-rules-to-repo \
+            -d elastic-export \
+            -s "$CUSTOM_RULES_DIR/rules" \
+            -se "$CUSTOM_RULES_DIR/exceptions" \
+            -sa "$CUSTOM_RULES_DIR/action_connectors" \
+            -e \
+            -ac \
+            -ske \
+            -da "Elastic Sync" || echo "Import completed with some errors (check logs)"
+        else
+          echo "No rules found in export directory, skipping import"
+        fi
+
+    - name: Check for changes
+      id: check-changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A
+        if git diff --staged --quiet; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+          echo "No changes detected"
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "Changes detected"
+          git status
+        fi
+
+    - name: Create Pull Request
+      if: steps.check-changes.outputs.changed == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: sync rules from Elastic Security"
+        title: "Sync Rules from Elastic Security - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+        body: |
+          This PR contains rules, exceptions, and action connectors synced from Elastic Security.
+          
+          **Source:** Elastic Security at ${{ secrets.ELASTIC_KIBANA_URL }}
+          **Sync Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          
+          Please review the changes before merging. GitHub is the source of truth, so any conflicts should be resolved in favor of the repository version.
+          
+          **Note:** This is an automated sync from Elastic. Manual changes made in Elastic will be overwritten by the next sync from GitHub.
+        branch: sync-from-elastic/$(date +'%Y%m%d-%H%M%S')
+        delete-branch: true
+        labels: |
+          automated
+          sync-from-elastic
+
+    - name: Cleanup export directory
+      if: always()
+      run: |
+        rm -rf elastic-export
+
+    - name: Sync summary
+      if: always()
+      run: |
+        if [ "${{ steps.check-changes.outputs.changed }}" == "true" ]; then
+          echo "✅ Changes detected and PR created"
+        else
+          echo "ℹ️ No changes detected, no PR created"
+        fi
+
+

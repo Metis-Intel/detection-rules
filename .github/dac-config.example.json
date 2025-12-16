@@ -1,0 +1,16 @@
+{
+  "kibana_url": "https://sub.metis.us.com",
+  "api_key": "YOUR_API_KEY_HERE",
+  "space": "default",
+  "custom_rules_dir": "custom_rules",
+  "exceptions_dir": "custom_rules/exceptions",
+  "action_connectors_dir": "custom_rules/action_connectors",
+  "sync_settings": {
+    "export_custom_rules_only": true,
+    "include_exceptions": true,
+    "include_action_connectors": true,
+    "overwrite_existing": true,
+    "overwrite_exceptions": true,
+    "overwrite_action_connectors": true
+  }
+}

@@ -108,6 +108,8 @@ ENV/
 
 # detection rules
 .detection-rules-cfg.*
+.github/dac-config.json
+.github/dac-config.local.json
 releases/
 collections/
 enriched-rule-indexes/
