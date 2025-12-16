@@ -145,6 +145,8 @@ We welcome your contributions to Detection Rules! Before contributing, please fa
 The Detection Rules repo includes a number of commands to help one manage rules with an "as code" philosophy. We recommend starting with our [DaC Specific Documentation](https://dac-reference.readthedocs.io/en/latest/) for strategies and recommended setup information. However, if you would prefer to jump right in, please see our local [detections as code documentation](docs-dev/detections-as-code.md) and [custom rules documentation](docs-dev/custom-rules-management.md) for information on how to configure this repo for use with custom rules followed by our [CLI documentation](CLI.md) for information on our commands to import and export rules.
 
 For setting up a complete DaC pipeline with GitHub Actions for bidirectional syncing between GitHub and Elastic Security, see our [DaC Pipeline Setup Guide](docs/dac-setup.md).
+
+<!-- Trigger workflow rerun -->
 ## RTAs
 
 Red Team Automations (RTAs) used to emulate attacker techniques and verify the rules can be found in dedicated
