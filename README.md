@@ -146,7 +146,7 @@ The Detection Rules repo includes a number of commands to help one manage rules 
 
 For setting up a complete DaC pipeline with GitHub Actions for bidirectional syncing between GitHub and Elastic Security, see our [DaC Pipeline Setup Guide](docs/dac-setup.md).
 
-<!-- Trigger workflow rerun -->
+<!-- Trigger sync workflow -->
 ## RTAs
 
 Red Team Automations (RTAs) used to emulate attacker techniques and verify the rules can be found in dedicated
