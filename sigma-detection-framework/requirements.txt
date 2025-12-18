@@ -1,0 +1,23 @@
+# Sigma CLI and related tools
+sigmac>=0.22.0
+sigma-cli>=0.1.0
+
+# Python dependencies for Sigma
+PyYAML>=6.0
+jsonschema>=4.0.0
+requests>=2.25.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=6.0.0
+
+# SIEM-specific SDKs (optional, for direct API integration)
+elasticsearch>=8.0.0  # For Elastic
+azure-identity>=1.10.0  # For Azure Sentinel
+splunk-sdk>=1.7.0  # For Splunk
+
+# Utilities
+click>=8.0.0
+tqdm>=4.60.0
