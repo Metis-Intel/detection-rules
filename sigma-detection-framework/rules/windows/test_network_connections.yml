@@ -1,0 +1,59 @@
+title: Test - Suspicious Network Connections
+id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+status: test
+description: |
+  Test rule to demonstrate network connection monitoring capabilities.
+  Detects suspicious outbound network connections that may indicate malicious activity.
+
+author: Detection Rules Test Suite
+date: 2025/12/17
+modified: 2025/12/17
+tags:
+  - test.detection
+  - attack.command_and_control
+  - attack.t1071
+  - attack.exfiltration
+  - attack.t1041
+
+logsource:
+  category: network_connection
+  product: windows
+
+detection:
+  selection:
+    Initiated: true
+    DestinationPort:
+      - 4444  # Common Metasploit port
+      - 6667  # IRC
+      - 9999  # Common C2 port
+      - 1337  # Elite port
+      - 31337 # Back Orifice
+    DestinationHostname|endswith:
+      - '.onion'
+      - '.tor'
+      - '.bit'
+      - '.i2p'
+
+  condition: selection
+
+fields:
+  - SourceHostname
+  - DestinationHostname
+  - DestinationPort
+  - Protocol
+  - User
+  - Image
+  - CommandLine
+
+level: high
+
+references:
+  - https://github.com/SigmaHQ/sigma
+  - https://attack.mitre.org/techniques/T1071/
+  - https://attack.mitre.org/techniques/T1041/
+
+falsepositives:
+  - Legitimate network scanning tools
+  - Penetration testing activities
+  - Network monitoring software
+  - Gaming applications using unusual ports
