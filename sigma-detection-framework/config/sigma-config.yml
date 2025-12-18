@@ -1,0 +1,75 @@
+# Sigma Configuration for Multi-SIEM Detection Framework
+# This configuration defines how to convert and deploy Sigma rules to multiple SIEMs
+
+# Global settings
+title: "Metis Intelligence Multi-SIEM Detection Framework"
+description: "Universal detection rules for multiple SIEM platforms using Sigma format"
+author: "Metis Intelligence"
+version: "1.0.0"
+
+# SIEM targets and their configurations
+targets:
+  elastic:
+    name: "Elastic Security"
+    format: "elasticsearch"
+    config:
+      index: "logs-*"
+      timestamp_field: "@timestamp"
+      output_format: "eql"
+
+  sentinel:
+    name: "Microsoft Sentinel"
+    format: "sentinel"
+    config:
+      workspace_id: "${SENTINEL_WORKSPACE_ID}"
+      resource_group: "${SENTINEL_RESOURCE_GROUP}"
+      subscription_id: "${SENTINEL_SUBSCRIPTION_ID}"
+
+  splunk:
+    name: "Splunk Enterprise Security"
+    format: "splunk"
+    config:
+      index: "main"
+      sourcetype: "sigma"
+      output_format: "spl"
+
+  qradar:
+    name: "IBM QRadar"
+    format: "qradar"
+    config:
+      domain_id: "${QRADAR_DOMAIN_ID}"
+      output_format: "aql"
+
+# Field mappings for different SIEMs
+field_mappings:
+  # Common field name mappings
+  common:
+    timestamp: ["@timestamp", "TimeGenerated", "_time", "StartTime"]
+    hostname: ["host.name", "Computer", "host", "hostname"]
+    username: ["user.name", "Account", "user", "username"]
+    process_name: ["process.name", "NewProcessName", "process", "Image"]
+    process_path: ["process.executable", "NewProcessName", "process_path"]
+    command_line: ["process.command_line", "CommandLine", "process_commandline"]
+    event_id: ["event.code", "EventID", "event_id", "id"]
+    source_ip: ["source.ip", "SourceIP", "src_ip", "client_ip"]
+    destination_ip: ["destination.ip", "DestinationIP", "dest_ip", "server_ip"]
+
+# Validation settings
+validation:
+  strict: true
+  check_duplicates: true
+  require_tags: true
+  require_references: false
+
+# Deployment settings
+deployment:
+  dry_run: false
+  backup_existing: true
+  update_existing: true
+  create_missing_indexes: false
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/sigma_framework.log"
